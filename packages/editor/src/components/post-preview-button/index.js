@@ -7,11 +7,12 @@ import { get } from 'lodash';
  * WordPress dependencies
  */
 import { Component, renderToString } from '@wordpress/element';
-import { Button, Path, SVG } from '@wordpress/components';
+import { Button, Path, SVG, ExternalLink } from '@wordpress/components';
 import { __, _x } from '@wordpress/i18n';
 import { withSelect, withDispatch } from '@wordpress/data';
 import { DotTip } from '@wordpress/nux';
 import { ifCondition, compose } from '@wordpress/compose';
+import { safeDecodeURI } from '@wordpress/url';
 
 function writeInterstitialMessage( targetDocument ) {
 	let markup = renderToString(
@@ -159,12 +160,27 @@ export class PostPreviewButton extends Component {
 	}
 
 	render() {
-		const { previewLink, currentPostLink, isSaveable } = this.props;
+		const { className, currentPostLink, isPermalink, isSaveable, linkElement, previewLink, samplePermalink } = this.props;
 
 		// Link to the `?preview=true` URL if we have it, since this lets us see
 		// changes that were autosaved since the post was last published. Otherwise,
 		// just link to the post's URL.
 		const href = previewLink || currentPostLink;
+
+		if ( isPermalink ) {
+			return (
+				<ExternalLink
+					className={ className }
+					href={ href }
+					target={ this.getWindowTarget() }
+					onClick={ this.openPreviewWindow }
+					ref={ linkElement }
+				>
+					{ safeDecodeURI( samplePermalink ) }
+					&lrm;
+				</ExternalLink>
+			);
+		}
 
 		return (
 			<Button
